@@ -1,0 +1,39 @@
+.cell {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border: 1px solid black;
+    display: flex;
+    /*flex: 0 0 30px;*/
+    justify-content: center;
+    align-items: center;
+}
+
+.cell:not(:nth-child(11n)) {
+    border-right: none;
+}
+
+.cell:not(:nth-child(-n + 11)) {
+    border-top: none;
+}
+
+.cell > input {
+
+    width: 90%;
+    height: 90%;
+    border: none;
+    font-size: 1em;
+    text-align: center;
+}
+
+.immutable {
+    font-size: 20px;
+    font-weight: bold;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.bkgd-black {
+    background-color: black;
+}
