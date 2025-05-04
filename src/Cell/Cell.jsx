@@ -12,17 +12,18 @@ export const Cell = (props) => {
     isSettingSection,
     setSection,
     updateCellValue,
+    setIsBlack,
     style
   } = props;
 
   const [editing, setEditing] = useState(false);
   const [editingValue, setEditingValue] = useState(number);
 
-  const numberOnly = new RegExp('^[0-9]$');
+  const numberOnly = new RegExp('^[0-9-]$');
 
   return (
     <div
-      className={`cell ${isBlack ? 'bkgd-black' : ''}`}
+      className={`cell ${isBlack ? 'is-black' : ''}`}
       style={style}
       onClick={() => {
 
@@ -47,7 +48,13 @@ export const Cell = (props) => {
           autoFocus={editing}
           onBlur={() => {
             setEditing(false);
-            updateCellValue(x, y, editingValue);
+            if (editingValue === '-') {
+
+              setIsBlack({x: x, y: y});
+            } else {
+
+              updateCellValue({x: x, y: y}, editingValue);
+            }
           }}
           onChange={(e) => {
 

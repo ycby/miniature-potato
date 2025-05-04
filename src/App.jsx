@@ -22,6 +22,41 @@ function App() {
     {x: 8, y: 5},
     {x: 9, y: 4},
   ]
+  const constraints = [
+    {
+      name: 'square'
+    },
+    {
+      name: 'product of digits = 20'
+    },
+    {
+      name: 'multiple of 13'
+    },
+    {
+      name: 'multiple of 32'
+    },
+    {
+      name: 'divisble by each digit'
+    },
+    {
+      name: 'product of digits = 25'
+    },
+    {
+      name: 'divisible by each digit'
+    },
+    {
+      name: 'odd palindrome'
+    },
+    {
+      name: 'fibonacci'
+    },
+    {
+      name: 'product of digits = 2025'
+    },
+    {
+      name: 'prime'
+    },
+  ]
 
   return (
     <>
@@ -29,6 +64,7 @@ function App() {
       <Grid
         size={11}
         yellowCells={yellowCells}
+        constraints={constraints}
       ></Grid>
     </>
   )

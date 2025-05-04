@@ -10,7 +10,10 @@ export const Section = (props) => {
     cells,
     currentSettingSection,
     setCurrentSections,
+    setCellsToValue,
   } = props;
+
+  const [currentValue, setCurrentValue] = useState(sectionNo + 1);
 
   return (
     <div
@@ -35,6 +38,24 @@ export const Section = (props) => {
             setCurrentSections(null);
           }}
         >Done</button>
+      }
+      {currentSettingSection == null &&
+        <>
+          <input
+            type='number'
+            min='1'
+            max='9'
+            defaultValue={currentValue}
+            onChange={(e) => {
+              setCurrentValue(e.target.value)
+            }} />
+          <button onClick={() => {
+
+            setCellsToValue(cells, currentValue)
+          }}>
+            Set
+          </button>
+        </>
       }
     </div>
   );

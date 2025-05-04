@@ -34,6 +34,7 @@
     right: 0;
 }
 
-.bkgd-black {
+.is-black {
     background-color: black;
+    color: white;
 }

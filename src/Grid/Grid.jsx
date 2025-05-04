@@ -8,6 +8,7 @@ export const Grid = (props) => {
   const {
     size = 4,
     yellowCells = [],
+    constraints = []
   } = props;
 
   const [cells, setCells] = useState([]);
@@ -72,6 +73,25 @@ export const Grid = (props) => {
 
   return (
     <div style={{display: 'flex'}}>
+      <div style={{
+        margin: '0 40px 0 0'
+      }}>
+        {constraints.map((constraint, index) => {
+          return (
+            <div
+              key={index}
+              style={{
+                display: 'flex',
+                height: '41px',
+                justifyContent: 'end',
+                alignItems: 'center'
+              }}
+            >
+              {constraint.name}
+            </div>
+          )
+        })}
+      </div>
       <div
         id='grid'
         style={{
@@ -93,13 +113,14 @@ export const Grid = (props) => {
                 isBlack={cells[cell.x][cell.y].isBlack}
                 number={cells[cell.x][cell.y].number}
                 style={cell.section != null ? {backgroundColor: cell.section.color} : {}}
-                updateCellValue={(x, y, newValue) => {
+                updateCellValue={(position, newValue) => {
 
-                  console.log(`position: ${x}, ${y}, newValue: ${newValue}`);
-                  const newRow = [...cells[x]];
-                  newRow[y].number = newValue;
+                  console.log(`position: ${position.x}, ${position.y}, newValue: ${newValue}`);
+                  const newRow = [...cells[position.x]];
+                  newRow[position.y].number = newValue;
+                  newRow[position.y].isBlack = false;
                   const newCells = [...cells];
-                  newCells[x] = newRow;
+                  newCells[position.x] = newRow;
 
                   setCells(newCells);
                 }}
@@ -112,6 +133,16 @@ export const Grid = (props) => {
 
                   const newRow = [...cells[position.x]];
                   newRow[position.y].section = sections[currentSettingSection];
+                  const newCells = [...cells];
+                  newCells[position.x] = newRow;
+
+                  setCells(newCells);
+                }}
+                setIsBlack={position => {
+
+                  const newRow = [...cells[position.x]];
+                  newRow[position.y].isBlack = true;
+                  newRow[position.y].number = '-';
                   const newCells = [...cells];
                   newCells[position.x] = newRow;
 
@@ -135,6 +166,21 @@ export const Grid = (props) => {
             setCurrentSections={(value) => {
 
               setCurrentSection(value);
+            }}
+            setCellsToValue={(affectedCells, value) => {
+
+              let newCells = [...cells];
+              newCells.map(row => {
+
+                return [...row];
+              });
+
+              affectedCells.map(cell => {
+
+                newCells[cell.x][cell.y].number = value;
+              })
+
+              setCells(newCells);
             }}
           ></Section>
         })}
