@@ -4,16 +4,15 @@
     height: 40px;
     border: 1px solid black;
     display: flex;
-    /*flex: 0 0 30px;*/
     justify-content: center;
     align-items: center;
 }
 
-.cell:not(:nth-child(11n)) {
+.border-right-none {
     border-right: none;
 }
 
-.cell:not(:nth-child(-n + 11)) {
+.border-top-none {
     border-top: none;
 }
 
