@@ -28,7 +28,7 @@ function App() {
   ]
 
   return (
-    <>
+    <div className='main'>
       <h1>JS 05/2025 Puzzle</h1>
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
         <label>Size: </label>
@@ -53,7 +53,7 @@ function App() {
         size={size}
         mode='SET_FIXED'
       ></Grid>
-    </>
+    </div>
   )
 }
 

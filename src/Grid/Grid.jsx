@@ -18,32 +18,7 @@ export const Grid = (props) => {
         {
             color: 'lightblue',
             cells: []
-        }, {
-            color: 'lightgreen',
-            cells: []
-        }, {
-            color: 'lightyellow',
-            cells: []
-        }, {
-            color: 'lightpink',
-            cells: []
-        }, {
-            color: 'khaki',
-            cells: []
-        }, {
-            color: 'lightsteelblue',
-            cells: []
-        }, {
-            color: 'linen',
-            cells: []
-        }, {
-            color: 'navajowhite',
-            cells: []
-        }, {
-            color: 'plum',
-            cells: []
-        },
-
+        }
     ]);
     const [currentSettingSection, setCurrentSection] = useState(null);
     const [constraints, setConstraints] = useState([
@@ -379,71 +354,73 @@ export const Grid = (props) => {
                 }
             </div>
 
-            {mode === 'SET_FIXED' &&
-                <div>
-                    <h4>Fixed Cells</h4>
-                    <ul>
-                        {
-                            fixedCells.map((cell) => <li key={`fixedx${cell.x}y${cell.y}`}>{cell.x}, {cell.y}</li>)
-                        }
-                    </ul>
-                    <button
-                        onClick={() => setMode('SET_SECTIONS')}
-                    >Next</button>
-                </div>
-            }
-            {mode === 'SET_SECTIONS' &&
-                <div>
-                    {sections.map((section, index) => {
+            <div className='sidebar'>
+                {mode === 'SET_FIXED' &&
+                    <div>
+                        <h4>Fixed Cells</h4>
+                        <ul>
+                            {
+                                fixedCells.map((cell) => <li key={`fixedx${cell.x}y${cell.y}`}>{cell.x}, {cell.y}</li>)
+                            }
+                        </ul>
+                        <button
+                            onClick={() => setMode('SET_SECTIONS')}
+                        >Next</button>
+                    </div>
+                }
+                {mode === 'SET_SECTIONS' &&
+                    <div>
+                        {sections.map((section, index) => {
 
-                        return <Section
-                            name={section.name}
-                            sectionNo={index}
-                            color={section.color}
-                            cells={section.cells}
-                            currentSettingSection={currentSettingSection}
-                            setCurrentSections={(value) => {
+                            return <Section
+                                name={section.name}
+                                sectionNo={index}
+                                color={section.color}
+                                cells={section.cells}
+                                currentSettingSection={currentSettingSection}
+                                setCurrentSections={(value) => {
 
-                                setCurrentSection(value);
-                            }}
-                            setCellsToValue={(affectedCells, value) => {
+                                    setCurrentSection(value);
+                                }}
+                                setCellsToValue={(affectedCells, value) => {
 
-                                let newCells = [...cells];
-                                newCells.map(row => {
+                                    let newCells = [...cells];
+                                    newCells.map(row => {
 
-                                    return [...row];
-                                });
+                                        return [...row];
+                                    });
 
-                                affectedCells.map(cell => {
+                                    affectedCells.map(cell => {
 
-                                    newCells[cell.x][cell.y].number = value;
-                                })
+                                        newCells[cell.x][cell.y].number = value;
+                                    })
 
-                                setCells(newCells);
-                            }}
-                            onRemove={(index) => {
+                                    setCells(newCells);
+                                }}
+                                onRemove={(index) => {
+
+                                    let newSections = [...sections];
+                                    newSections.splice(index, 1);
+                                    setSections(newSections);
+                                }}
+                            ></Section>
+                        })}
+                        <button
+                            onClick={() => {
 
                                 let newSections = [...sections];
-                                newSections.splice(index, 1);
+
+                                newSections.push({
+                                    color: generateRandomColor(),
+                                    cells: []
+                                });
+
                                 setSections(newSections);
                             }}
-                        ></Section>
-                    })}
-                    <button
-                        onClick={() => {
-
-                            let newSections = [...sections];
-
-                            newSections.push({
-                                color: generateRandomColor(),
-                                cells: []
-                            });
-
-                            setSections(newSections);
-                        }}
-                    >Add Section</button>
-                </div>
-            }
+                        >Add Section</button>
+                    </div>
+                }
+            </div>
         </div>
     )
 }

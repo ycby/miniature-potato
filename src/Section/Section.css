@@ -1,6 +1,5 @@
 .section {
-    width: 300px;
-    margin: 0 50px;
+    width: 100%;
     padding: 10px 20px 10px 20px;
     display: flex;
     justify-content: space-between;
