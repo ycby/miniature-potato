@@ -7,6 +7,7 @@ export const Section = (props) => {
         sectionNo,
         color,
         cells,
+        mode,
         currentSettingSection,
         setCurrentSections,
         setCellsToValue,
@@ -23,43 +24,33 @@ export const Section = (props) => {
                 backgroundColor: color,
             }}
         >
-            <span>#{sectionNo + 1}</span>
-            {currentSettingSection == null &&
-                <button
-                    onClick={() => {
-                        console.log(sectionNo)
-                        setCurrentSections(sectionNo);
-                    }}
-                >Edit</button>
-            }
-            {currentSettingSection === sectionNo &&
-                <button
-                    onClick={() => {
-                        setCurrentSections(null);
-                    }}
-                >Done</button>
-            }
-            {currentSettingSection == null &&
-                <>
-                    <input
-                        type='number'
-                        min='1'
-                        max='9'
-                        defaultValue={currentValue}
-                        onChange={(e) => {
-                            setCurrentValue(e.target.value)
-                        }}/>
-                    <button onClick={() => {
-
-                        setCellsToValue(cells, currentValue)
-                    }}>
-                        Set
-                    </button>
+            <span className='section-number'>#{sectionNo + 1}</span>
+            <div className='controls'>
+                {mode === 'SET_SECTIONS' && currentSettingSection == null &&
                     <button
-                        onClick={() => onRemove(sectionNo)}
-                    >Remove</button>
-                </>
-            }
+                        onClick={() => setCurrentSections(sectionNo)}
+                    >Edit</button>
+                }
+                {mode === 'SET_SECTIONS' && currentSettingSection === sectionNo &&
+                    <button
+                        onClick={() => setCurrentSections(null)}
+                    >Done</button>
+                }
+                {mode === 'SOLVE' && currentSettingSection == null &&
+                    <>
+                        <input
+                            type='number'
+                            min='1'
+                            max='9'
+                            defaultValue={currentValue}
+                            onChange={(e) => setCurrentValue(e.target.value)} />
+                        <button onClick={() => setCellsToValue(cells, currentValue)}>Set</button>
+                    </>
+                }
+                {mode === 'SET_SECTIONS' && currentSettingSection == null  &&
+                    <button onClick={() => onRemove(sectionNo)}>Remove</button>
+                }
+            </div>
         </div>
     );
 }

@@ -4,14 +4,180 @@ import {Cell} from '../Cell/Cell.jsx';
 import {Section} from '../Section/Section.jsx';
 import {Constraint} from '../Contstraint/Constraint.jsx';
 
-//MODES: SET_FIXED, SET_SECTIONS, SOLVE
+const initialConstraints = [
+    {
+        name: 'square',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                return accumulator && Number.isInteger(Math.sqrt(currentValue))
+            }, true);
+        }
+    },
+    {
+        name: 'product of digits = 20',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
+
+                return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 20);
+            }, true);
+        }
+    },
+    {
+        name: 'multiple of 13',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                return accumulator && (currentValue % 13 === 0);
+            }, true);
+        }
+    },
+    {
+        name: 'multiple of 32',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                return accumulator && (currentValue % 32 === 0);
+            }, true);
+        }
+    },
+    {
+        name: 'divisble by each digit',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
+
+                return accumulator && currentValueArray.reduce((accumulator2, currentValue2) => {
+
+                    return accumulator2 && currentValue % currentValue2 === 0;
+                }, true);
+            }, true)
+        }
+    },
+    {
+        name: 'product of digits = 25',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
+
+                return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 25);
+            }, true);
+        }
+    },
+    {
+        name: 'divisible by each digit',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
+
+                return accumulator && currentValueArray.reduce((accumulator2, currentValue2) => {
+
+                    return accumulator2 && currentValue % currentValue2 === 0;
+                }, true);
+            }, true)
+        }
+    },
+    {
+        name: 'odd palindrome',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
+
+                let l = 0;
+                let r = currentValueArray.length - 1;
+
+                let res = currentValueArray[0] % 2 === 1;
+                while (l <= r) {
+
+                    if (currentValueArray[l] !== currentValueArray[r]) {
+
+                        res = false;
+                        break;
+                    }
+
+                    l++;
+                    r--;
+                }
+
+                return accumulator && res;
+            }, true);
+        }
+    },
+    {
+        name: 'fibonacci',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                return accumulator && (
+                    Number.isInteger(Math.sqrt(5 * currentValue * currentValue + 4)) ||
+                    Number.isInteger(Math.sqrt(5 * currentValue * currentValue - 4))
+                );
+            }, true);
+        }
+    },
+    {
+        name: 'product of digits = 2025',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
+
+                return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 2025);
+            }, true);
+        }
+    },
+    {
+        name: 'prime',
+        checker: (values) => {
+
+            return values.reduce((accumulator, currentValue) => {
+
+                let isPrime = true;
+                const lowerSqrt = Math.floor(Math.sqrt(currentValue));
+
+                if (currentValue >= 2) {
+
+                    for (let i = 2; i <= lowerSqrt; i++) {
+
+                        if (currentValue % i === 0) {
+
+                            isPrime = false;
+                            break;
+                        }
+                    }
+                } else if (currentValue === 1) {
+
+                    isPrime = false;
+                }
+
+                return accumulator && isPrime;
+            }, true);
+        }
+    },
+];
 export const Grid = (props) => {
 
     const {
-        size = 4
+        size = 4,
+        mode
     } = props;
 
-    const [mode, setMode] = useState('SET_FIXED');
     const [cells, setCells] = useState([]);
     const [fixedCells, setFixedCells] = useState([]);
     const [sections, setSections] = useState([
@@ -21,177 +187,16 @@ export const Grid = (props) => {
         }
     ]);
     const [currentSettingSection, setCurrentSection] = useState(null);
-    const [constraints, setConstraints] = useState([
-        {
-            name: 'square',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    return accumulator && Number.isInteger(Math.sqrt(currentValue))
-                }, true);
-            }
-        },
-        {
-            name: 'product of digits = 20',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                    return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 20);
-                }, true);
-            }
-        },
-        {
-            name: 'multiple of 13',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    return accumulator && (currentValue % 13 === 0);
-                }, true);
-            }
-        },
-        {
-            name: 'multiple of 32',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    return accumulator && (currentValue % 32 === 0);
-                }, true);
-            }
-        },
-        {
-            name: 'divisble by each digit',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                    return accumulator && currentValueArray.reduce((accumulator2, currentValue2) => {
-
-                        return accumulator2 && currentValue % currentValue2 === 0;
-                    }, true);
-                }, true)
-            }
-        },
-        {
-            name: 'product of digits = 25',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                    return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 25);
-                }, true);
-            }
-        },
-        {
-            name: 'divisible by each digit',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                    return accumulator && currentValueArray.reduce((accumulator2, currentValue2) => {
-
-                        return accumulator2 && currentValue % currentValue2 === 0;
-                    }, true);
-                }, true)
-            }
-        },
-        {
-            name: 'odd palindrome',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                    let l = 0;
-                    let r = currentValueArray.length - 1;
-
-                    let res = currentValueArray[0] % 2 === 1;
-                    while (l <= r) {
-
-                        if (currentValueArray[l] !== currentValueArray[r]) {
-
-                            res = false;
-                            break;
-                        }
-
-                        l++;
-                        r--;
-                    }
-
-                    return accumulator && res;
-                }, true);
-            }
-        },
-        {
-            name: 'fibonacci',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    return accumulator && (
-                        Number.isInteger(Math.sqrt(5 * currentValue * currentValue + 4)) ||
-                        Number.isInteger(Math.sqrt(5 * currentValue * currentValue - 4))
-                    );
-                }, true);
-            }
-        },
-        {
-            name: 'product of digits = 2025',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                    return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 2025);
-                }, true);
-            }
-        },
-        {
-            name: 'prime',
-            checker: (values) => {
-
-                return values.reduce((accumulator, currentValue) => {
-
-                    let isPrime = true;
-                    const lowerSqrt = Math.floor(Math.sqrt(currentValue));
-
-                    if (currentValue >= 2) {
-
-                        for (let i = 2; i <= lowerSqrt; i++) {
-
-                            if (currentValue % i === 0) {
-
-                                isPrime = false;
-                                break;
-                            }
-                        }
-                    } else if (currentValue === 1) {
-
-                        isPrime = false;
-                    }
-
-                    return accumulator && isPrime;
-                }, true);
-            }
-        },
-    ]);
+    const [constraints, setConstraints] = useState([]);
 
     useEffect(() => {
 
         setCells(generateInitialState(size));
+    }, [size]);
+
+    useEffect(() => {
+
+        setConstraints(generateInitialConstraints(size));
     }, [size]);
 
     useEffect(() => {
@@ -216,7 +221,25 @@ export const Grid = (props) => {
             case 'SET_SECTIONS':
                 return ((position) => {
 
+                    if (currentSettingSection === null) return;
+
+                    const newSections = [...sections];
+                    newSections[currentSettingSection].cells.push(position);
+                    setSections(newSections);
+
+                    let newSectionCells = generateCellsCopy(cells);
+                    newSectionCells[position.x][position.y].section = sections[currentSettingSection];
+                    setCells(newSectionCells);
+
+                    //TODO: handle constraints
+                    const newConstraints = [...constraints];
+
+                    newConstraints[position.x].correct = null;
+
+                    setConstraints(newConstraints);
                 });
+            case 'SET_CONSTRAINTS':
+                break;
             case 'SOLVE':
                 break;
             default:
@@ -226,51 +249,48 @@ export const Grid = (props) => {
 
     return (
         <div style={{display: 'flex'}}>
-            {mode === 'SOLVE' &&
-                <div style={{
-                    margin: '0 40px 0 0'
-                }}>
-                    {constraints.map((constraint, index) => {
-                        return (
-                            <Constraint
-                                key={index}
-                                constraint={constraint}
-                                verifyRow={() => {
+            <div className='constraints'>
+                {constraints.map((constraint, index) => {
+                    return (
+                        <Constraint
+                            key={`${constraint.name}${index}`}
+                            mode={mode}
+                            constraint={constraint}
+                            verifyRow={() => {
 
-                                    console.log('Verifying: ' + constraint.name);
-                                    const row = cells[index];
+                                console.log('Verifying: ' + constraint.name);
+                                const row = cells[index];
 
-                                    let values = [];
+                                let values = [];
 
-                                    let currNum = '';
-                                    for (const cell of row) {
+                                let currNum = '';
+                                for (const cell of row) {
 
-                                        if (!cell.isBlack) {
+                                    if (!cell.isBlack) {
 
-                                            currNum += cell.number;
-                                        } else {
+                                        currNum += cell.number;
+                                    } else {
 
-                                            if (currNum === '') continue;
+                                        if (currNum === '') continue;
 
-                                            values.push(parseInt(currNum));
-                                            currNum = '';
-                                        }
+                                        values.push(parseInt(currNum));
+                                        currNum = '';
                                     }
-                                    //push the last element if exists
-                                    if (currNum !== '') values.push(parseInt(currNum));
+                                }
+                                //push the last element if exists
+                                if (currNum !== '') values.push(parseInt(currNum));
 
-                                    const newConstraints = [...constraints];
+                                const newConstraints = [...constraints];
 
-                                    newConstraints[index].correct = constraint.checker(values);
+                                newConstraints[index].correct = constraint.checker(values);
 
-                                    setConstraints(newConstraints);
-                                }}
-                            >
-                            </Constraint>
-                        )
-                    })}
-                </div>
-            }
+                                setConstraints(newConstraints);
+                            }}
+                        >
+                        </Constraint>
+                    )
+                })}
+            </div>
             <div
                 id='grid'
                 style={{
@@ -312,25 +332,6 @@ export const Grid = (props) => {
                                     setConstraints(newConstraints);
                                 }}
                                 isSettingSection={currentSettingSection !== null}
-                                setSection={position => {
-
-                                    const newSections = [...sections];
-                                    newSections[currentSettingSection].cells.push(position);
-                                    setSections(newSections);
-
-                                    const newRow = [...cells[position.x]];
-                                    newRow[position.y].section = sections[currentSettingSection];
-                                    const newCells = [...cells];
-                                    newCells[position.x] = newRow;
-
-                                    setCells(newCells);
-
-                                    const newConstraints = [...constraints];
-
-                                    newConstraints[position.x].correct = null;
-
-                                    setConstraints(newConstraints);
-                                }}
                                 setIsBlack={position => {
 
                                     const newRow = [...cells[position.x]];
@@ -363,9 +364,6 @@ export const Grid = (props) => {
                                 fixedCells.map((cell) => <li key={`fixedx${cell.x}y${cell.y}`}>{cell.x}, {cell.y}</li>)
                             }
                         </ul>
-                        <button
-                            onClick={() => setMode('SET_SECTIONS')}
-                        >Next</button>
                     </div>
                 }
                 {mode === 'SET_SECTIONS' &&
@@ -375,25 +373,16 @@ export const Grid = (props) => {
                             return <Section
                                 name={section.name}
                                 sectionNo={index}
+                                mode={mode}
                                 color={section.color}
                                 cells={section.cells}
                                 currentSettingSection={currentSettingSection}
-                                setCurrentSections={(value) => {
-
-                                    setCurrentSection(value);
-                                }}
+                                setCurrentSections={(value) => setCurrentSection(value)}
                                 setCellsToValue={(affectedCells, value) => {
 
-                                    let newCells = [...cells];
-                                    newCells.map(row => {
+                                    let newCells = generateCellsCopy(cells);
 
-                                        return [...row];
-                                    });
-
-                                    affectedCells.map(cell => {
-
-                                        newCells[cell.x][cell.y].number = value;
-                                    })
+                                    affectedCells.map(cell => newCells[cell.x][cell.y].number = value);
 
                                     setCells(newCells);
                                 }}
@@ -478,4 +467,18 @@ const generateRandomColor = () => {
     //Add alpha manually (dont want dark colors)
     color += '77';
     return color;
+}
+
+const generateInitialConstraints = (size) => {
+
+    let constraints = [];
+    for (let i = 0; i < size; i++) {
+
+        constraints.push({
+            name: '#' + (i + 1),
+            checker: () => false
+        });
+    }
+
+    return constraints;
 }

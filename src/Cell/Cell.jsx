@@ -10,8 +10,6 @@ export const Cell = (props) => {
         isBlack = false,
         number,
         onClick,
-        isSettingSection,
-        setSection,
         updateCellValue,
         setIsBlack,
         style,
@@ -30,13 +28,6 @@ export const Cell = (props) => {
             onClick={() => {
 
                 onClick({x: x, y: y});
-                // if (isSettingSection) {
-                //
-                //     setSection({x: x, y: y});
-                // } else {
-                //
-                //     setEditing(true);
-                // }
             }}
         >
             {isFixed &&

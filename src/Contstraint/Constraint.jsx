@@ -1,38 +1,41 @@
-import { FcCheckmark } from "react-icons/fc";
-import { FcCancel } from "react-icons/fc";
+import {FcCheckmark} from "react-icons/fc";
+import {FcCancel} from "react-icons/fc";
+import './Constraint.css';
 
 export const Constraint = (props) => {
 
-  const {
-    constraint,
-    verifyRow
-  } = props;
+    const {
+        mode,
+        constraint,
+        verifyRow
+    } = props;
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        height: '41px',
-        justifyContent: 'end',
-        alignItems: 'center'
-      }}
-    >
-      {
-        constraint.correct != null &&
-        displayStatus(constraint.correct)
-      }
-      <div
-        onClick={() => {
-          verifyRow();
-        }}
-      >
-        {constraint.name}
-      </div>
-    </div>
-  );
+    return (
+        <div
+            className='constraint'
+        >
+            {mode === 'SET_SECTIONS' &&
+                <div>
+                    {constraint.name}
+                    <button>Set Constraint</button>
+                </div>
+            }
+            {mode === 'SOLVE' &&
+                <>
+                    {
+                        constraint.correct != null &&
+                        displayStatus(constraint.correct)
+                    }
+                    <div onClick={() => verifyRow()}>
+                        {constraint.name}
+                    </div>
+                </>
+            }
+        </div>
+    );
 }
 
 const displayStatus = (status) => {
 
-  return status ? <FcCheckmark /> : <FcCancel />;
+    return status ? <FcCheckmark/> : <FcCancel/>;
 }
