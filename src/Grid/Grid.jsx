@@ -3,6 +3,7 @@ import {useEffect, useState} from 'react';
 import {Cell} from '../Cell/Cell.jsx';
 import {Section} from '../Section/Section.jsx';
 import {Constraint} from '../Contstraint/Constraint.jsx';
+import {CELL_SIZE} from "../App.jsx";
 
 const initialConstraints = [
     {
@@ -253,8 +254,16 @@ export const Grid = (props) => {
                 {constraints.map((constraint, index) => {
                     return (
                         <Constraint
+                            index={constraint.index}
                             key={`${constraint.name}${index}`}
                             mode={mode}
+                            setConstraint={(newConstraint) => {
+
+                                let newConstraints = [...constraints];
+                                newConstraints[newConstraint.index] = newConstraint;
+                                setConstraints(newConstraints);
+                            }}
+                            editWindowSize={size * (CELL_SIZE + 1) + 1}
                             constraint={constraint}
                             verifyRow={() => {
 
@@ -475,6 +484,7 @@ const generateInitialConstraints = (size) => {
     for (let i = 0; i < size; i++) {
 
         constraints.push({
+            index: i,
             name: '#' + (i + 1),
             checker: () => false
         });

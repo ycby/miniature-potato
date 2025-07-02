@@ -25,6 +25,8 @@ const yellowCells = [
     {x: 9, y: 4},
 ]
 
+export const CELL_SIZE = 40;
+
 function App() {
 
     const [size, setSize] = useState(11);
