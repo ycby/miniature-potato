@@ -246,7 +246,7 @@ export const Grid = (props) => {
                     }
                 </ul>
             </div>
-            <div style={{display: 'flex', flexDirection: 'row'}}>
+            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
                 <div className='constraints'>
                     {constraints.map((constraint, index) => {
                         return (
@@ -260,7 +260,7 @@ export const Grid = (props) => {
                                     newConstraints[newConstraint.index] = newConstraint;
                                     setConstraints(newConstraints);
                                 }}
-                                editWindowSize={size * (CELL_SIZE + 1) + 1}
+                                editWindowSize={size * CELL_SIZE}
                                 constraint={constraint}
                                 verifyRow={() => {
 
@@ -300,10 +300,11 @@ export const Grid = (props) => {
                 <div
                     id='grid'
                     style={{
-                        width: `${(40 + 1) * size + 1}px`,
-                        height: `${(40 + 1) * size + 1}px`,
+                        width: `${(CELL_SIZE) * size}px`,
+                        height: `${(CELL_SIZE) * size}px`,
                         display: 'flex',
-                        flexWrap: 'wrap'
+                        flexWrap: 'wrap',
+                        boxSizing: 'content-box',
                     }}>
                     {
                         cells.map((row) => {
@@ -369,49 +370,47 @@ export const Grid = (props) => {
                 </div>
 
                 <div className='sidebar'>
-                    {mode === 'SETUP' &&
-                        <div>
-                            {sections.map((section, index) => {
+                    <div>
+                        {sections.map((section, index) => {
 
-                                return <Section
-                                    name={section.name}
-                                    sectionNo={index}
-                                    mode={mode}
-                                    color={section.color}
-                                    cells={section.cells}
-                                    currentSettingSection={currentSettingSection}
-                                    setCurrentSections={(value) => setCurrentSection(value)}
-                                    setCellsToValue={(affectedCells, value) => {
+                            return <Section
+                                name={section.name}
+                                sectionNo={index}
+                                mode={mode}
+                                color={section.color}
+                                cells={section.cells}
+                                currentSettingSection={currentSettingSection}
+                                setCurrentSections={(value) => setCurrentSection(value)}
+                                setCellsToValue={(affectedCells, value) => {
 
-                                        let newCells = generateCellsCopy(cells);
+                                    let newCells = generateCellsCopy(cells);
 
-                                        affectedCells.map(cell => newCells[cell.x][cell.y].number = value);
+                                    affectedCells.map(cell => newCells[cell.x][cell.y].number = value);
 
-                                        setCells(newCells);
-                                    }}
-                                    onRemove={(index) => {
-
-                                        let newSections = [...sections];
-                                        newSections.splice(index, 1);
-                                        setSections(newSections);
-                                    }}
-                                ></Section>
-                            })}
-                            <button
-                                onClick={() => {
+                                    setCells(newCells);
+                                }}
+                                onRemove={(index) => {
 
                                     let newSections = [...sections];
-
-                                    newSections.push({
-                                        color: generateRandomColor(),
-                                        cells: []
-                                    });
-
+                                    newSections.splice(index, 1);
                                     setSections(newSections);
                                 }}
-                            >Add Section</button>
-                        </div>
-                    }
+                            ></Section>
+                        })}
+                        <button
+                            onClick={() => {
+
+                                let newSections = [...sections];
+
+                                newSections.push({
+                                    color: generateRandomColor(),
+                                    cells: []
+                                });
+
+                                setSections(newSections);
+                            }}
+                        >Add Section</button>
+                    </div>
                 </div>
             </div>
         </div>

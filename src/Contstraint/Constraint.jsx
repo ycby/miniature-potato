@@ -21,7 +21,7 @@ export const Constraint = (props) => {
 
     return (
         <div
-            className='constraint'
+            className='constraint' style={{height: `${CELL_SIZE}px`}}
         >
             {mode === 'SETUP' &&
                 <div>
@@ -46,7 +46,7 @@ export const Constraint = (props) => {
                     style={{
                         width: `${editWindowSize - 20}px`,
                         height: `${editWindowSize - 20}px`,
-                        top: `${(-index * (CELL_SIZE + 1) - 1).toString()}px`
+                        top: `${(-index * CELL_SIZE).toString()}px`
                     }}
                 >
                     <span style={{alignSelf: 'flex-start'}}>Name</span>
