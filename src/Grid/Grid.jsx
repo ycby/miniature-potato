@@ -204,220 +204,215 @@ export const Grid = (props) => {
 
         markFixedCells(cells, fixedCells);
     }, [cells, fixedCells]);
-    
-    const cellOnClickFunctionGenerator = (mode) => {
 
-        switch (mode) {
-            case 'SET_FIXED':
-                return ((position) => {
+    const onClickFixedHandler = (position) => {
 
-                    let newFixedCells = [...fixedCells];
-                    newFixedCells.push(position);
-                    setFixedCells(newFixedCells);
+        let newFixedCells = [...fixedCells];
+        newFixedCells.push(position);
+        setFixedCells(newFixedCells);
 
-                    let newCells = generateCellsCopy(cells);
-                    newCells[position.x][position.y].isFixed = true;
-                    setCells(newCells);
-                });
-            case 'SET_SECTIONS':
-                return ((position) => {
+        let newCells = generateCellsCopy(cells);
+        newCells[position.x][position.y].isFixed = true;
+        setCells(newCells);
+    }
 
-                    if (currentSettingSection === null) return;
+    const onClickSectionHandler = (position) => {
 
-                    const newSections = [...sections];
-                    newSections[currentSettingSection].cells.push(position);
-                    setSections(newSections);
+        if (currentSettingSection === null) return;
 
-                    let newSectionCells = generateCellsCopy(cells);
-                    newSectionCells[position.x][position.y].section = sections[currentSettingSection];
-                    setCells(newSectionCells);
+        const newSections = [...sections];
+        newSections[currentSettingSection].cells.push(position);
+        setSections(newSections);
 
-                    //TODO: handle constraints
-                    const newConstraints = [...constraints];
+        let newSectionCells = generateCellsCopy(cells);
+        newSectionCells[position.x][position.y].section = sections[currentSettingSection];
+        setCells(newSectionCells);
 
-                    newConstraints[position.x].correct = null;
+        //TODO: handle constraints
+        const newConstraints = [...constraints];
 
-                    setConstraints(newConstraints);
-                });
-            case 'SET_CONSTRAINTS':
-                break;
-            case 'SOLVE':
-                break;
-            default:
-                return () => {};
-        }
+        newConstraints[position.x].correct = null;
+
+        setConstraints(newConstraints);
     }
 
     return (
-        <div style={{display: 'flex'}}>
-            <div className='constraints'>
-                {constraints.map((constraint, index) => {
-                    return (
-                        <Constraint
-                            index={constraint.index}
-                            key={`${constraint.name}${index}`}
-                            mode={mode}
-                            setConstraint={(newConstraint) => {
-
-                                let newConstraints = [...constraints];
-                                newConstraints[newConstraint.index] = newConstraint;
-                                setConstraints(newConstraints);
-                            }}
-                            editWindowSize={size * (CELL_SIZE + 1) + 1}
-                            constraint={constraint}
-                            verifyRow={() => {
-
-                                console.log('Verifying: ' + constraint.name);
-                                const row = cells[index];
-
-                                let values = [];
-
-                                let currNum = '';
-                                for (const cell of row) {
-
-                                    if (!cell.isBlack) {
-
-                                        currNum += cell.number;
-                                    } else {
-
-                                        if (currNum === '') continue;
-
-                                        values.push(parseInt(currNum));
-                                        currNum = '';
-                                    }
-                                }
-                                //push the last element if exists
-                                if (currNum !== '') values.push(parseInt(currNum));
-
-                                const newConstraints = [...constraints];
-
-                                newConstraints[index].correct = constraint.checker(values);
-
-                                setConstraints(newConstraints);
-                            }}
-                        >
-                        </Constraint>
-                    )
-                })}
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+            <div className='fixed-cells-container'>
+                <h4>Fixed Cells</h4>
+                <ul>
+                    {
+                        fixedCells.map((cell) => <li key={`fixedx${cell.x}y${cell.y}`}>{cell.x}, {cell.y}</li>)
+                    }
+                </ul>
             </div>
-            <div
-                id='grid'
-                style={{
-                    width: `${(40 + 1) * size + 1}px`,
-                    height: `${(40 + 1) * size + 1}px`,
-                    display: 'flex',
-                    flexWrap: 'wrap'
-                }}>
-                {
-                    cells.map((row) => {
+            <div style={{display: 'flex', flexDirection: 'row'}}>
+                <div className='constraints'>
+                    {constraints.map((constraint, index) => {
+                        return (
+                            <Constraint
+                                index={constraint.index}
+                                key={`${constraint.name}${index}`}
+                                mode={mode}
+                                setConstraint={(newConstraint) => {
 
-                        return row.map((cell) => {
-
-                            return <Cell
-                                key={`${cell.x}, ${cell.y}`}
-                                x={cell.x}
-                                y={cell.y}
-                                isFixed={cells[cell.x][cell.y].isFixed}
-                                isBlack={cells[cell.x][cell.y].isBlack}
-                                number={cells[cell.x][cell.y].number}
-                                className={`${cell.y % size !== size - 1 ? 'border-right-none' : ''} ${cell.x > 0 ? 'border-top-none' : ''}`}
-                                style={cell.section != null ? {backgroundColor: cell.section.color} : {}}
-                                onClick={cellOnClickFunctionGenerator(mode)}
-                                updateCellValue={(position, newValue) => {
-
-                                    console.log(`position: ${position.x}, ${position.y}, newValue: ${newValue}`);
-                                    const newRow = [...cells[position.x]];
-                                    newRow[position.y].number = newValue;
-                                    newRow[position.y].isBlack = false;
-                                    const newCells = [...cells];
-                                    newCells[position.x] = newRow;
-
-                                    setCells(newCells);
-
-                                    const newConstraints = [...constraints];
-
-                                    newConstraints[position.x].correct = null;
-
+                                    let newConstraints = [...constraints];
+                                    newConstraints[newConstraint.index] = newConstraint;
                                     setConstraints(newConstraints);
                                 }}
-                                isSettingSection={currentSettingSection !== null}
-                                setIsBlack={position => {
+                                editWindowSize={size * (CELL_SIZE + 1) + 1}
+                                constraint={constraint}
+                                verifyRow={() => {
 
-                                    const newRow = [...cells[position.x]];
-                                    newRow[position.y].isBlack = true;
-                                    newRow[position.y].number = '-';
-                                    const newCells = [...cells];
-                                    newCells[position.x] = newRow;
+                                    console.log('Verifying: ' + constraint.name);
+                                    const row = cells[index];
 
-                                    setCells(newCells);
+                                    let values = [];
+
+                                    let currNum = '';
+                                    for (const cell of row) {
+
+                                        if (!cell.isBlack) {
+
+                                            currNum += cell.number;
+                                        } else {
+
+                                            if (currNum === '') continue;
+
+                                            values.push(parseInt(currNum));
+                                            currNum = '';
+                                        }
+                                    }
+                                    //push the last element if exists
+                                    if (currNum !== '') values.push(parseInt(currNum));
 
                                     const newConstraints = [...constraints];
 
-                                    newConstraints[position.x].correct = null;
+                                    newConstraints[index].correct = constraint.checker(values);
 
                                     setConstraints(newConstraints);
                                 }}
                             >
-                            </Cell>
+                            </Constraint>
+                        )
+                    })}
+                </div>
+                <div
+                    id='grid'
+                    style={{
+                        width: `${(40 + 1) * size + 1}px`,
+                        height: `${(40 + 1) * size + 1}px`,
+                        display: 'flex',
+                        flexWrap: 'wrap'
+                    }}>
+                    {
+                        cells.map((row) => {
+
+                            return row.map((cell) => {
+
+                                return <Cell
+                                    key={`${cell.x}, ${cell.y}`}
+                                    x={cell.x}
+                                    y={cell.y}
+                                    isFixed={cells[cell.x][cell.y].isFixed}
+                                    isBlack={cells[cell.x][cell.y].isBlack}
+                                    number={cells[cell.x][cell.y].number}
+                                    className={`${cell.y % size !== size - 1 ? 'border-right-none' : ''} ${cell.x > 0 ? 'border-top-none' : ''}`}
+                                    style={cell.section != null ? {backgroundColor: cell.section.color} : {}}
+                                    onClick={(position) => {
+
+                                        if (mode === 'SETUP') {
+
+                                            if (currentSettingSection === null) onClickFixedHandler(position);
+                                            else onClickSectionHandler(position);
+                                        }
+                                    }}
+                                    updateCellValue={(position, newValue) => {
+
+                                        console.log(`position: ${position.x}, ${position.y}, newValue: ${newValue}`);
+                                        const newRow = [...cells[position.x]];
+                                        newRow[position.y].number = newValue;
+                                        newRow[position.y].isBlack = false;
+                                        const newCells = [...cells];
+                                        newCells[position.x] = newRow;
+
+                                        setCells(newCells);
+
+                                        const newConstraints = [...constraints];
+
+                                        newConstraints[position.x].correct = null;
+
+                                        setConstraints(newConstraints);
+                                    }}
+                                    isSettingSection={currentSettingSection !== null}
+                                    setIsBlack={position => {
+
+                                        const newRow = [...cells[position.x]];
+                                        newRow[position.y].isBlack = true;
+                                        newRow[position.y].number = '-';
+                                        const newCells = [...cells];
+                                        newCells[position.x] = newRow;
+
+                                        setCells(newCells);
+
+                                        const newConstraints = [...constraints];
+
+                                        newConstraints[position.x].correct = null;
+
+                                        setConstraints(newConstraints);
+                                    }}
+                                >
+                                </Cell>
+                            })
                         })
-                    })
-                }
-            </div>
+                    }
+                </div>
 
-            <div className='sidebar'>
-                {mode === 'SET_FIXED' &&
-                    <div>
-                        <h4>Fixed Cells</h4>
-                        <ul>
-                            {
-                                fixedCells.map((cell) => <li key={`fixedx${cell.x}y${cell.y}`}>{cell.x}, {cell.y}</li>)
-                            }
-                        </ul>
-                    </div>
-                }
-                {mode === 'SET_SECTIONS' &&
-                    <div>
-                        {sections.map((section, index) => {
+                <div className='sidebar'>
+                    {mode === 'SETUP' &&
+                        <div>
+                            {sections.map((section, index) => {
 
-                            return <Section
-                                name={section.name}
-                                sectionNo={index}
-                                mode={mode}
-                                color={section.color}
-                                cells={section.cells}
-                                currentSettingSection={currentSettingSection}
-                                setCurrentSections={(value) => setCurrentSection(value)}
-                                setCellsToValue={(affectedCells, value) => {
+                                return <Section
+                                    name={section.name}
+                                    sectionNo={index}
+                                    mode={mode}
+                                    color={section.color}
+                                    cells={section.cells}
+                                    currentSettingSection={currentSettingSection}
+                                    setCurrentSections={(value) => setCurrentSection(value)}
+                                    setCellsToValue={(affectedCells, value) => {
 
-                                    let newCells = generateCellsCopy(cells);
+                                        let newCells = generateCellsCopy(cells);
 
-                                    affectedCells.map(cell => newCells[cell.x][cell.y].number = value);
+                                        affectedCells.map(cell => newCells[cell.x][cell.y].number = value);
 
-                                    setCells(newCells);
-                                }}
-                                onRemove={(index) => {
+                                        setCells(newCells);
+                                    }}
+                                    onRemove={(index) => {
+
+                                        let newSections = [...sections];
+                                        newSections.splice(index, 1);
+                                        setSections(newSections);
+                                    }}
+                                ></Section>
+                            })}
+                            <button
+                                onClick={() => {
 
                                     let newSections = [...sections];
-                                    newSections.splice(index, 1);
+
+                                    newSections.push({
+                                        color: generateRandomColor(),
+                                        cells: []
+                                    });
+
                                     setSections(newSections);
                                 }}
-                            ></Section>
-                        })}
-                        <button
-                            onClick={() => {
-
-                                let newSections = [...sections];
-
-                                newSections.push({
-                                    color: generateRandomColor(),
-                                    cells: []
-                                });
-
-                                setSections(newSections);
-                            }}
-                        >Add Section</button>
-                    </div>
-                }
+                            >Add Section</button>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     )

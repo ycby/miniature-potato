@@ -26,12 +26,12 @@ export const Section = (props) => {
         >
             <span className='section-number'>#{sectionNo + 1}</span>
             <div className='controls'>
-                {mode === 'SET_SECTIONS' && currentSettingSection == null &&
+                {mode === 'SETUP' && currentSettingSection == null &&
                     <button
                         onClick={() => setCurrentSections(sectionNo)}
                     >Edit</button>
                 }
-                {mode === 'SET_SECTIONS' && currentSettingSection === sectionNo &&
+                {mode === 'SETUP' && currentSettingSection === sectionNo &&
                     <button
                         onClick={() => setCurrentSections(null)}
                     >Done</button>
@@ -47,7 +47,7 @@ export const Section = (props) => {
                         <button onClick={() => setCellsToValue(cells, currentValue)}>Set</button>
                     </>
                 }
-                {mode === 'SET_SECTIONS' && currentSettingSection == null  &&
+                {mode === 'SETUP' && currentSettingSection == null  &&
                     <button onClick={() => onRemove(sectionNo)}>Remove</button>
                 }
             </div>

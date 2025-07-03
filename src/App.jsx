@@ -4,7 +4,7 @@ import {Grid} from './Grid/Grid.jsx';
 import {useState} from "react";
 
 //MODES: SET_FIXED, SET_SECTIONS, SOLVE
-const modes = ['SET_FIXED', 'SET_SECTIONS', 'SOLVE'];
+const modes = ['SETUP', 'SOLVE'];
 
 //Generate the initial state here
 const yellowCells = [

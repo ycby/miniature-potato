@@ -23,7 +23,7 @@ export const Constraint = (props) => {
         <div
             className='constraint'
         >
-            {mode === 'SET_SECTIONS' &&
+            {mode === 'SETUP' &&
                 <div>
                     <span style={{width: '100px', textOverflow: 'ellipsis', display: 'inline-block', overflow: 'hidden'}}>{constraint.name}</span>
                     <button onClick={() => setIsEditingConstraint(true)}>Set Constraint</button>
