@@ -24,9 +24,9 @@ export const Constraint = (props) => {
             className='constraint' style={{height: `${CELL_SIZE}px`}}
         >
             {mode === 'SETUP' &&
-                <div>
-                    <span style={{width: '100px', textOverflow: 'ellipsis', display: 'inline-block', overflow: 'hidden'}}>{constraint.name}</span>
-                    <button onClick={() => setIsEditingConstraint(true)}>Set Constraint</button>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <span style={{width: '200px', textOverflow: 'ellipsis', display: 'inline-block', overflow: 'hidden', whiteSpace:'nowrap', textAlign: 'end'}}>{constraint.name}</span>
+                    <button onClick={() => setIsEditingConstraint(true)}>Set</button>
                 </div>
             }
             {mode === 'SOLVE' &&
@@ -44,8 +44,8 @@ export const Constraint = (props) => {
                 <div
                     className='edit-constraint-container'
                     style={{
-                        width: `${editWindowSize - 20}px`,
-                        height: `${editWindowSize - 20}px`,
+                        width: `${editWindowSize}px`,
+                        height: `${editWindowSize}px`,
                         top: `${(-index * CELL_SIZE).toString()}px`
                     }}
                 >

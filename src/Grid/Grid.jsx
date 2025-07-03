@@ -3,181 +3,19 @@ import {useEffect, useState} from 'react';
 import {Cell} from '../Cell/Cell.jsx';
 import {Section} from '../Section/Section.jsx';
 import {Constraint} from '../Contstraint/Constraint.jsx';
+import Modal from '../Modal/Modal.jsx';
 import {CELL_SIZE} from "../App.jsx";
 
-const initialConstraints = [
-    {
-        name: 'square',
-        checker: (values) => {
+//MODES: SETUP, SOLVE
+const modes = ['SETUP', 'SOLVE'];
 
-            return values.reduce((accumulator, currentValue) => {
+//<a href={"data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(initialConstraints.map((constraint) => {
+//                     return {...constraint, checker: constraint.checker.toString()}
+//                 })))}>export</a>
+export const Grid = () => {
 
-                return accumulator && Number.isInteger(Math.sqrt(currentValue))
-            }, true);
-        }
-    },
-    {
-        name: 'product of digits = 20',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 20);
-            }, true);
-        }
-    },
-    {
-        name: 'multiple of 13',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                return accumulator && (currentValue % 13 === 0);
-            }, true);
-        }
-    },
-    {
-        name: 'multiple of 32',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                return accumulator && (currentValue % 32 === 0);
-            }, true);
-        }
-    },
-    {
-        name: 'divisble by each digit',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                return accumulator && currentValueArray.reduce((accumulator2, currentValue2) => {
-
-                    return accumulator2 && currentValue % currentValue2 === 0;
-                }, true);
-            }, true)
-        }
-    },
-    {
-        name: 'product of digits = 25',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 25);
-            }, true);
-        }
-    },
-    {
-        name: 'divisible by each digit',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                return accumulator && currentValueArray.reduce((accumulator2, currentValue2) => {
-
-                    return accumulator2 && currentValue % currentValue2 === 0;
-                }, true);
-            }, true)
-        }
-    },
-    {
-        name: 'odd palindrome',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                let l = 0;
-                let r = currentValueArray.length - 1;
-
-                let res = currentValueArray[0] % 2 === 1;
-                while (l <= r) {
-
-                    if (currentValueArray[l] !== currentValueArray[r]) {
-
-                        res = false;
-                        break;
-                    }
-
-                    l++;
-                    r--;
-                }
-
-                return accumulator && res;
-            }, true);
-        }
-    },
-    {
-        name: 'fibonacci',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                return accumulator && (
-                    Number.isInteger(Math.sqrt(5 * currentValue * currentValue + 4)) ||
-                    Number.isInteger(Math.sqrt(5 * currentValue * currentValue - 4))
-                );
-            }, true);
-        }
-    },
-    {
-        name: 'product of digits = 2025',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                const currentValueArray = currentValue.toString().split('').map(d => parseInt(d));
-
-                return accumulator && (currentValueArray.reduce((product, newValue) => product * newValue) === 2025);
-            }, true);
-        }
-    },
-    {
-        name: 'prime',
-        checker: (values) => {
-
-            return values.reduce((accumulator, currentValue) => {
-
-                let isPrime = true;
-                const lowerSqrt = Math.floor(Math.sqrt(currentValue));
-
-                if (currentValue >= 2) {
-
-                    for (let i = 2; i <= lowerSqrt; i++) {
-
-                        if (currentValue % i === 0) {
-
-                            isPrime = false;
-                            break;
-                        }
-                    }
-                } else if (currentValue === 1) {
-
-                    isPrime = false;
-                }
-
-                return accumulator && isPrime;
-            }, true);
-        }
-    },
-];
-export const Grid = (props) => {
-
-    const {
-        size = 4,
-        mode
-    } = props;
+    const [size, setSize] = useState(11);
+    const [mode, setMode] = useState(modes[0]);
 
     const [cells, setCells] = useState([]);
     const [fixedCells, setFixedCells] = useState([]);
@@ -189,6 +27,9 @@ export const Grid = (props) => {
     ]);
     const [currentSettingSection, setCurrentSection] = useState(null);
     const [constraints, setConstraints] = useState([]);
+
+    const [isUploadFixedOpened, setIsUploadFixedOpened] = useState(false);
+    const [isUploadConstraintOpened, setIsUploadConstraintOpened] = useState(false);
 
     useEffect(() => {
 
@@ -237,7 +78,47 @@ export const Grid = (props) => {
     }
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column'}}>
+        <>
+            <div style={{display: 'flex', alignItems: 'center', width: '100%'}}>
+                <div style={{flex: '1', display: 'flex', justifyContent: 'flex-start'}}>
+                    <label>Size: </label>
+                    <input
+                        id='sizeInput'
+                        name='sizeInput'
+                        type='number'
+                        min='0'
+                        max='20'
+                        value={size.toString()}
+                        onChange={e => {
+
+                            const sanitizedValue = e.target.value.replace(/^[^0-9]*$/, '');
+
+                            if (!/^[0-9]*$/.test(sanitizedValue)) return;
+
+                            setSize(isNaN(sanitizedValue) ? 0 : parseInt(sanitizedValue));
+                        }}
+                    />
+                </div>
+                <div>
+                    <button
+                        onClick={() => setMode(prevMode(modes, mode))}
+                    >Prev
+                    </button>
+                    <strong>{mode}</strong>
+                    <button
+                        onClick={() => setMode(nextMode(modes, mode))}
+                    >Next
+                    </button>
+                </div>
+                <div style={{flex: '1', display: 'flex', justifyContent: 'flex-end'}}>
+                    <button
+                        onClick={() => setIsUploadFixedOpened(true)}
+                    >Import Fixed</button>
+                    <button
+                        onClick={() => setIsUploadConstraintOpened(true)}
+                    >Import Constraint</button>
+                </div>
+            </div>
             <div className='fixed-cells-container'>
                 <h4>Fixed Cells</h4>
                 <ul>
@@ -413,7 +294,101 @@ export const Grid = (props) => {
                     </div>
                 </div>
             </div>
-        </div>
+            <Modal
+                isOpen={isUploadFixedOpened}
+                onClose={() => setIsUploadFixedOpened(false)}
+            >
+                <div className='upload-fixed'>
+                    <div>
+                        <h3>Upload Fixed</h3>
+                        <p>Please upload the file as a json object.
+                            The object should be an array of positions.
+                            Positions are objects with attributes x and y.
+                            Out of bounds positions will be ignored. This app won't validate your stuff.
+                        </p>
+                        <p>E.g</p>
+                        <pre>
+                            {`[
+    {x: 1, y: 3},
+    {x: 1, y: 4}
+]`}
+                        </pre>
+                        <input
+                            type='file'
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                const fr = new FileReader();
+
+                                fr.onload = (() => {
+
+                                    try {
+                                        const parsedJson = JSON.parse(fr.result);
+
+                                        setFixedCells(parsedJson);
+                                    } catch (e) {
+                                        console.error(e);
+                                    }
+                                });
+
+                                fr.readAsText(file)
+                            }}
+                        />
+                    </div>
+                </div>
+            </Modal>
+            <Modal
+                isOpen={isUploadConstraintOpened}
+                onClose={() => setIsUploadConstraintOpened(false)}
+            >
+                <div className='upload-constraint'>
+                    <div>
+                        <h3>Upload Constraints</h3>
+                        <p>Please upload the file as a json object.
+                            The object should be an array following the format below.
+                            You may want to test your constraint checker yourself before uploading.
+                            This app won't validate your stuff.
+                        </p>
+                        <p>
+                            Values is an array of values for that row.
+                            Your function should evaluate whether the values satisfy the criteria and return true/false.
+                        </p>
+                        <p>E.g</p>
+                        <pre>
+                            {`[
+    {
+    "name": "square",
+    "checker": "(values) => {//function here//}"
+  }
+]`}
+                        </pre>
+                        <input
+                            type='file'
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                const fr = new FileReader();
+
+                                fr.onload = (() => {
+
+                                    try {
+                                        const parsedJson = JSON.parse(fr.result);
+
+                                        parsedJson.forEach((item, index) => {
+                                            item.index = index;
+                                            item.checker = eval(item.checker);
+                                        });
+                                        setConstraints(parsedJson);
+                                    } catch (e) {
+                                        console.error(e);
+                                    }
+                                });
+
+                                fr.readAsText(file)
+                            }}
+                        />
+                    </div>
+                </div>
+            </Modal>
+        </>
     )
 }
 
@@ -449,6 +424,8 @@ const markFixedCells = (cells, fixedCells) => {
 
     return fixedCells.forEach(fixedCell => {
 
+        if (fixedCell.x >= copy.length) return;
+        if (fixedCell.y >= copy.length) return;
         copy[fixedCell.x][fixedCell.y].isFixed = true;
     });
 }
@@ -485,4 +462,28 @@ const generateInitialConstraints = (size) => {
     }
 
     return constraints;
+}
+
+const nextMode = (modes, currentMode) => {
+
+    const index = modes.indexOf(currentMode);
+
+    if (index + 1 < modes.length) {
+
+        return modes[index + 1];
+    }
+
+    return currentMode;
+}
+
+const prevMode = (modes, currentMode) => {
+
+    const index = modes.indexOf(currentMode);
+
+    if (index - 1 >= 0) {
+
+        return modes[index - 1];
+    }
+
+    return currentMode;
 }

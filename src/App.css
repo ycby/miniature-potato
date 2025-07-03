@@ -38,6 +38,7 @@ html {
 }
 
 .fixed-cells-container {
+  width: 100%;
   height: 4em;
   border: 1px solid black;
   padding: 4px 8px;
@@ -66,4 +67,16 @@ html {
   padding: 0;
   display: flex;
   align-items: start;
+}
+
+.upload-fixed,
+.upload-constraint {
+  padding: 32px 64px;
+  max-width: 600px;
+  text-align: start;
+}
+
+pre {
+  background-color: lightgrey;
+  padding: 8px 16px;
 }
