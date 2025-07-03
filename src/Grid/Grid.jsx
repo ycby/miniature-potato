@@ -49,11 +49,18 @@ export const Grid = () => {
     const onClickFixedHandler = (position) => {
 
         let newFixedCells = [...fixedCells];
-        newFixedCells.push(position);
+
+        const fixedIndex = newFixedCells.findIndex((element) => element.x === position.x && element.y === position.y);
+        if (fixedIndex !== -1) {
+            newFixedCells.splice(fixedIndex, 1);
+        } else {
+
+            newFixedCells.push(position);
+        }
         setFixedCells(newFixedCells);
 
         let newCells = generateCellsCopy(cells);
-        newCells[position.x][position.y].isFixed = true;
+        newCells[position.x][position.y].isFixed = !newCells[position.x][position.y].isFixed;
         setCells(newCells);
     }
 
@@ -70,6 +77,24 @@ export const Grid = () => {
         setCells(newSectionCells);
 
         //TODO: handle constraints
+        const newConstraints = [...constraints];
+
+        newConstraints[position.x].correct = null;
+
+        setConstraints(newConstraints);
+    }
+
+    const onClickEditCellHandler = (position, newValue) => {
+
+        console.log(`position: ${position.x}, ${position.y}, newValue: ${newValue}`);
+
+        let newCells = generateCellsCopy(cells);
+        let editedCell = newCells[position.x][position.y];
+        editedCell.number = newValue;
+        editedCell.isBlack = newValue === '-';
+
+        setCells(newCells);
+
         const newConstraints = [...constraints];
 
         newConstraints[position.x].correct = null;
@@ -97,6 +122,7 @@ export const Grid = () => {
 
                             setSize(isNaN(sanitizedValue) ? 0 : parseInt(sanitizedValue));
                         }}
+                        disabled={mode === 'SOLVE'}
                     />
                 </div>
                 <div>
@@ -111,12 +137,16 @@ export const Grid = () => {
                     </button>
                 </div>
                 <div style={{flex: '1', display: 'flex', justifyContent: 'flex-end'}}>
-                    <button
-                        onClick={() => setIsUploadFixedOpened(true)}
-                    >Import Fixed</button>
-                    <button
-                        onClick={() => setIsUploadConstraintOpened(true)}
-                    >Import Constraint</button>
+                    {mode === 'SETUP' &&
+                        <>
+                            <button
+                                onClick={() => setIsUploadFixedOpened(true)}
+                            >Import Fixed</button>
+                            <button
+                                onClick={() => setIsUploadConstraintOpened(true)}
+                            >Import Constraint</button>
+                        </>
+                    }
                 </div>
             </div>
             <div className='fixed-cells-container'>
@@ -194,11 +224,13 @@ export const Grid = () => {
 
                                 return <Cell
                                     key={`${cell.x}, ${cell.y}`}
+                                    mode={mode}
                                     x={cell.x}
                                     y={cell.y}
-                                    isFixed={cells[cell.x][cell.y].isFixed}
-                                    isBlack={cells[cell.x][cell.y].isBlack}
-                                    number={cells[cell.x][cell.y].number}
+                                    isFixed={cell.isFixed}
+                                    isBlack={cell.isBlack}
+                                    number={cell.number}
+                                    possibleValues={cell.possibleValues}
                                     className={`${cell.y % size !== size - 1 ? 'border-right-none' : ''} ${cell.x > 0 ? 'border-top-none' : ''}`}
                                     style={cell.section != null ? {backgroundColor: cell.section.color} : {}}
                                     onClick={(position) => {
@@ -209,40 +241,8 @@ export const Grid = () => {
                                             else onClickSectionHandler(position);
                                         }
                                     }}
-                                    updateCellValue={(position, newValue) => {
-
-                                        console.log(`position: ${position.x}, ${position.y}, newValue: ${newValue}`);
-                                        const newRow = [...cells[position.x]];
-                                        newRow[position.y].number = newValue;
-                                        newRow[position.y].isBlack = false;
-                                        const newCells = [...cells];
-                                        newCells[position.x] = newRow;
-
-                                        setCells(newCells);
-
-                                        const newConstraints = [...constraints];
-
-                                        newConstraints[position.x].correct = null;
-
-                                        setConstraints(newConstraints);
-                                    }}
+                                    onUpdateValue={(position, newValue) => onClickEditCellHandler(position, newValue)}
                                     isSettingSection={currentSettingSection !== null}
-                                    setIsBlack={position => {
-
-                                        const newRow = [...cells[position.x]];
-                                        newRow[position.y].isBlack = true;
-                                        newRow[position.y].number = '-';
-                                        const newCells = [...cells];
-                                        newCells[position.x] = newRow;
-
-                                        setCells(newCells);
-
-                                        const newConstraints = [...constraints];
-
-                                        newConstraints[position.x].correct = null;
-
-                                        setConstraints(newConstraints);
-                                    }}
                                 >
                                 </Cell>
                             })
@@ -266,7 +266,13 @@ export const Grid = () => {
 
                                     let newCells = generateCellsCopy(cells);
 
-                                    affectedCells.map(cell => newCells[cell.x][cell.y].number = value);
+                                    affectedCells.map(cell => {
+
+                                        let affectedCell = newCells[cell.x][cell.y];
+                                        affectedCell.number = value;
+                                        affectedCell.minimumValue = value;
+                                        affectedCell.possibleValues = ['-', value]
+                                    });
 
                                     setCells(newCells);
                                 }}
@@ -408,6 +414,9 @@ const generateInitialState = (size) => {
                 isFixed: false,
                 isBlack: false,
                 number: 0,
+                possibleValues: ['-'],
+                minimumValue: 1,
+                originalValue: 1
             });
 
         }

@@ -4,14 +4,15 @@ import './Cell.css';
 export const Cell = (props) => {
 
     const {
+        mode,
         x = 0,
         y = 0,
         isFixed = false,
         isBlack = false,
         number,
+        possibleValues,
         onClick,
-        updateCellValue,
-        setIsBlack,
+        onUpdateValue,
         style,
         className
     } = props;
@@ -23,11 +24,16 @@ export const Cell = (props) => {
 
     return (
         <div
+            title={`[${possibleValues.toString()}]`}
             className={`cell ${isBlack ? 'is-black' : ''} ${className}`}
             style={style}
             onClick={() => {
 
-                onClick({x: x, y: y});
+                if (mode === 'SETUP') {
+                    onClick({x: x, y: y});
+                } else if (mode === 'SOLVE') {
+                    setEditing(true);
+                }
             }}
         >
             {isFixed &&
@@ -42,13 +48,9 @@ export const Cell = (props) => {
                     autoFocus={editing}
                     onBlur={() => {
                         setEditing(false);
-                        if (editingValue === '-') {
-
-                            setIsBlack({x: x, y: y});
-                        } else {
-
-                            updateCellValue({x: x, y: y}, editingValue);
-                        }
+                        onUpdateValue({x: x, y: y}, editingValue);
+                        //TODO: Validation on blur. If new value is not in list of possible values, prevent blur
+                        //this is just for manual editing
                     }}
                     onChange={(e) => {
 
