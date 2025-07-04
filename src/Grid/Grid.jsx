@@ -86,12 +86,17 @@ export const Grid = () => {
 
     const onClickEditCellHandler = (position, newValue) => {
 
-        console.log(`position: ${position.x}, ${position.y}, newValue: ${newValue}`);
-
         let newCells = generateCellsCopy(cells);
         let editedCell = newCells[position.x][position.y];
         editedCell.number = newValue;
         editedCell.isBlack = newValue === '-';
+
+        //When value is set to '-', need to set the overflow amount and adjacent cell possible values
+        //When value is set to [1-9], need to deduct the taken amount from the overflow of the black square, then update
+        //remaining adjacent cells possible values
+        editedCell.availableOverflow = newValue === '-' ? editedCell.minimumValue : 0;
+        const adjacentCells = getBlackAdjacentPositions(position);
+        adjacentCells.forEach((cell) => recalculateCell(newCells[cell.x][cell.y], newCells));
 
         setCells(newCells);
 
@@ -100,6 +105,52 @@ export const Grid = () => {
         newConstraints[position.x].correct = null;
 
         setConstraints(newConstraints);
+    }
+
+    const getAdjacentPositions = (position) => {
+
+        let adjacentCells = [];
+
+        if (position.x - 1 >= 0) adjacentCells.push({x: position.x - 1, y: position.y});
+        if (position.x + 1 < size) adjacentCells.push({x: position.x + 1, y: position.y});
+        if (position.y - 1 >= 0) adjacentCells.push({x: position.x, y: position.y - 1});
+        if (position.y + 1 < size) adjacentCells.push({x: position.x, y: position.y + 1});
+
+        return adjacentCells;
+    }
+
+    const getBlackAdjacentPositions = (position) => {
+
+        let invalidBlackCells = getAdjacentPositions(position);
+
+        if (position.y - 2 >= 0) invalidBlackCells.push({x: position.x, y: position.y - 2});
+        if (position.y + 2 < size) invalidBlackCells.push({x: position.x, y: position.y + 2});
+
+        return invalidBlackCells;
+    }
+
+    const recalculateCell = (cell, cells) => {
+
+        if (cell.isFixed) return;
+
+        const adjacentPositions = getAdjacentPositions({x: cell.x, y: cell.y});
+        const adjacentFixedPositions = getBlackAdjacentPositions({x: cell.x, y: cell.y});
+
+        const maximumOverflow = adjacentPositions.reduce(
+            (accumulator, position) =>  accumulator + Number(cells[position.x][position.y].availableOverflow),
+            0
+        );
+
+        let newPossibleValues = generatePossibleValues(cell, maximumOverflow);
+
+        const isBlackable = adjacentFixedPositions.reduce(
+            (accumulator, position) => accumulator && !cells[position.x][position.y].isBlack,
+            true
+        );
+
+        if (isBlackable) newPossibleValues.unshift('-');
+
+        cell.possibleValues = newPossibleValues;
     }
 
     return (
@@ -271,7 +322,7 @@ export const Grid = () => {
                                         let affectedCell = newCells[cell.x][cell.y];
                                         affectedCell.number = value;
                                         affectedCell.minimumValue = value;
-                                        affectedCell.possibleValues = ['-', value]
+                                        affectedCell.possibleValues = affectedCell.isFixed ? [Number(value)] : ['-', Number(value)]
                                     });
 
                                     setCells(newCells);
@@ -415,8 +466,9 @@ const generateInitialState = (size) => {
                 isBlack: false,
                 number: 0,
                 possibleValues: ['-'],
-                minimumValue: 1,
-                originalValue: 1
+                availableOverflow: 0,
+                minimumValue: 0,
+                originalValue: 0
             });
 
         }
@@ -495,4 +547,17 @@ const prevMode = (modes, currentMode) => {
     }
 
     return currentMode;
+}
+
+const generatePossibleValues = (cell, overflowAmount) => {
+
+    const endNumber = Math.min(9, Number(overflowAmount) + Number(cell.minimumValue));
+
+    let newPossibleValues = [];
+    for (let i = Number(cell.minimumValue); i <= endNumber; i++) {
+
+        newPossibleValues.push(i);
+    }
+
+    return newPossibleValues;
 }
