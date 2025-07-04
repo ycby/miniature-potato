@@ -148,7 +148,7 @@ export const Grid = () => {
             true
         );
 
-        if (isBlackable) newPossibleValues.unshift('-');
+        if (isBlackable && cell.y !== 1 && cell.y !== size - 2) newPossibleValues.unshift('-');
 
         cell.possibleValues = newPossibleValues;
     }
