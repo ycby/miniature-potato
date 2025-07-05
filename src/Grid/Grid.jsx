@@ -21,6 +21,7 @@ export const Grid = () => {
     const [fixedCells, setFixedCells] = useState([]);
     const [sections, setSections] = useState([
         {
+            initialValue: 1,
             color: 'lightblue',
             cells: []
         }
@@ -30,6 +31,7 @@ export const Grid = () => {
 
     const [isUploadFixedOpened, setIsUploadFixedOpened] = useState(false);
     const [isUploadConstraintOpened, setIsUploadConstraintOpened] = useState(false);
+    const [isUploadSectionOpened, setIsUploadSectionOpened] = useState(false);
 
     useEffect(() => {
 
@@ -45,6 +47,14 @@ export const Grid = () => {
 
         markFixedCells(cells, fixedCells);
     }, [cells, fixedCells]);
+
+    useEffect(() => {
+
+        if (mode === 'SOLVE') {
+
+            cells.forEach((cell) => recalculateCell(cell, cells));
+        }
+    }, [mode]);
 
     const onClickFixedHandler = (position) => {
 
@@ -231,10 +241,13 @@ export const Grid = () => {
                         <>
                             <button
                                 onClick={() => setIsUploadFixedOpened(true)}
-                            >Import Fixed</button>
+                            >Fixed</button>
                             <button
                                 onClick={() => setIsUploadConstraintOpened(true)}
-                            >Import Constraint</button>
+                            >Constraint</button>
+                            <button
+                                onClick={() => setIsUploadSectionOpened(true)}
+                            >Section</button>
                         </>
                     }
                 </div>
@@ -339,19 +352,19 @@ export const Grid = () => {
                     <div>
                         {sections.map((section, index) => {
 
+                            section.index = index;
                             return <Section
-                                name={section.name}
+                                key={`${index}${section.color}`}
                                 sectionNo={index}
                                 mode={mode}
-                                color={section.color}
-                                cells={section.cells}
+                                section={section}
                                 currentSettingSection={currentSettingSection}
                                 setCurrentSections={(value) => setCurrentSection(value)}
-                                setCellsToValue={(affectedCells, value) => {
+                                setCellsToValue={(section, value) => {
 
                                     let newCells = generateCellsCopy(cells);
 
-                                    affectedCells.map(cell => {
+                                    section.cells.map(cell => {
 
                                         let affectedCell = newCells[cell.x][cell.y];
                                         affectedCell.number = value;
@@ -359,6 +372,10 @@ export const Grid = () => {
                                         affectedCell.possibleValues = affectedCell.isFixed ? [Number(value)] : ['-', Number(value)]
                                     });
 
+                                    let newSections = [...sections];
+                                    newSections[section.index].initialValue = value;
+
+                                    setSections(newSections);
                                     setCells(newCells);
                                 }}
                                 onRemove={(index) => {
@@ -389,9 +406,18 @@ export const Grid = () => {
                 isOpen={isUploadFixedOpened}
                 onClose={() => setIsUploadFixedOpened(false)}
             >
-                <div className='upload-fixed'>
+                <div className='upload-modal'>
                     <div>
-                        <h3>Upload Fixed</h3>
+                        <h3>Manage Fixed Cells</h3>
+                        <h4>Export Existing Cells</h4>
+                        <p>This will generate a json file which you can use save state.</p>
+                        <a href={generateJSONURI(fixedCells)} download='fixed_cells.json'>
+                            <button>
+                                Export
+                            </button>
+                        </a>
+                        <hr></hr>
+                        <h4>Import</h4>
                         <p>Please upload the file as a json object.
                             The object should be an array of positions.
                             Positions are objects with attributes x and y.
@@ -431,9 +457,18 @@ export const Grid = () => {
                 isOpen={isUploadConstraintOpened}
                 onClose={() => setIsUploadConstraintOpened(false)}
             >
-                <div className='upload-constraint'>
+                <div className='upload-modal'>
                     <div>
-                        <h3>Upload Constraints</h3>
+                        <h3>Manage Constraints</h3>
+                        <h4>Export Existing Constraints</h4>
+                        <p>This will generate a json file which you can use save state.</p>
+                        <a href={generateJSONURI(constraints.map(constraint => {return {...constraint, checker: constraint.checker.toString()}}))} download='constraints.json'>
+                            <button>
+                                Export
+                            </button>
+                        </a>
+                        <hr></hr>
+                        <h4>Import</h4>
                         <p>Please upload the file as a json object.
                             The object should be an array following the format below.
                             You may want to test your constraint checker yourself before uploading.
@@ -468,6 +503,73 @@ export const Grid = () => {
                                             item.checker = eval(item.checker);
                                         });
                                         setConstraints(parsedJson);
+                                    } catch (e) {
+                                        console.error(e);
+                                    }
+                                });
+
+                                fr.readAsText(file)
+                            }}
+                        />
+                    </div>
+                </div>
+            </Modal>
+            <Modal
+                isOpen={isUploadSectionOpened}
+                onClose={() => setIsUploadSectionOpened(false)}
+            >
+                <div className='upload-modal'>
+                    <div>
+                        <h3>Manage Sections</h3>
+                        <h4>Export Existing Sections</h4>
+                        <p>This will generate a json file which you can use save state.</p>
+                        <a href={generateJSONURI(sections)} download='sections.json'>
+                            <button>
+                                Export
+                            </button>
+                        </a>
+                        <hr></hr>
+                        <h4>Import</h4>
+                        <p>Please upload the file as a json object.
+                            The object should be an array following the format below.
+                            You may want to test your constraint checker yourself before uploading.
+                            This app won't validate your stuff.
+                        </p>
+                        <p>
+                            Should contain an array of cell positions for each section.
+                            Colours will be assigned automatically
+                        </p>
+                        <p>E.g</p>
+                        <pre>
+                            {`[
+  {
+    "initialValue": 3,
+    "cells": [{"x": 1, "y": 1}, {"x": 2, "y": 2}]
+  }
+]`}
+                        </pre>
+                        <input
+                            type='file'
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                const fr = new FileReader();
+
+                                fr.onload = (() => {
+
+                                    try {
+                                        const parsedJson = JSON.parse(fr.result);
+                                        let newCells = generateCellsCopy(cells);
+
+                                        parsedJson.forEach((item) => {
+                                            item.color = generateRandomColor();
+                                            item.cells.forEach((position) => {
+
+                                                newCells[position.x][position.y].section = item;
+                                                newCells[position.x][position.y].number = item.initialValue;
+                                            });
+                                        });
+                                        setSections(parsedJson);
+                                        setCells(newCells);
                                     } catch (e) {
                                         console.error(e);
                                     }
@@ -594,4 +696,9 @@ const generatePossibleValues = (cell, overflowAmount) => {
     }
 
     return newPossibleValues;
+}
+
+const generateJSONURI = (objectToDownload) => {
+
+    return 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(objectToDownload));
 }

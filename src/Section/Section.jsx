@@ -5,8 +5,7 @@ export const Section = (props) => {
 
     const {
         sectionNo,
-        color,
-        cells,
+        section,
         mode,
         currentSettingSection,
         setCurrentSections,
@@ -14,14 +13,14 @@ export const Section = (props) => {
         onRemove
     } = props;
 
-    const [currentValue, setCurrentValue] = useState(sectionNo + 1);
+    const [currentValue, setCurrentValue] = useState(section.initialValue);
 
     return (
         <div
             key={sectionNo}
             className='section'
             style={{
-                backgroundColor: color,
+                backgroundColor: section.color,
             }}
         >
             <span className='section-number'>#{sectionNo + 1}</span>
@@ -36,7 +35,7 @@ export const Section = (props) => {
                         onClick={() => setCurrentSections(null)}
                     >Done</button>
                 }
-                {mode === 'SOLVE' && currentSettingSection == null &&
+                {mode === 'SETUP' && currentSettingSection == null &&
                     <>
                         <input
                             type='number'
@@ -44,7 +43,7 @@ export const Section = (props) => {
                             max='9'
                             defaultValue={currentValue}
                             onChange={(e) => setCurrentValue(e.target.value)} />
-                        <button onClick={() => setCellsToValue(cells, currentValue)}>Set</button>
+                        <button onClick={() => setCellsToValue(section, currentValue)}>Set</button>
                     </>
                 }
                 {mode === 'SETUP' && currentSettingSection == null  &&
