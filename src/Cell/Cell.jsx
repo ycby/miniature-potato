@@ -5,12 +5,7 @@ export const Cell = (props) => {
 
     const {
         mode,
-        x = 0,
-        y = 0,
-        isFixed = false,
-        isBlack = false,
-        number,
-        possibleValues,
+        cell,
         onClick,
         onUpdateValue,
         style,
@@ -18,25 +13,26 @@ export const Cell = (props) => {
     } = props;
 
     const [editing, setEditing] = useState(false);
-    const [editingValue, setEditingValue] = useState(number);
+    const [editingValue, setEditingValue] = useState(cell.number);
 
     const numberOnly = new RegExp('^[0-9-]$');
 
     return (
         <div
-            title={`[${possibleValues.toString()}]`}
-            className={`cell ${isBlack ? 'is-black' : ''} ${className}`}
+            title={`[${cell.possibleValues.toString()}]
+Overflow: ${cell.availableOverflow}`}
+            className={`cell ${cell.isBlack ? 'is-black' : ''} ${className}`}
             style={style}
             onClick={() => {
 
                 if (mode === 'SETUP') {
-                    onClick({x: x, y: y});
+                    onClick({x: cell.x, y: cell.y});
                 } else if (mode === 'SOLVE') {
                     setEditing(true);
                 }
             }}
         >
-            {isFixed &&
+            {cell.isFixed &&
                 <div className='immutable'>
                     *
                 </div>
@@ -48,7 +44,7 @@ export const Cell = (props) => {
                     autoFocus={editing}
                     onBlur={() => {
                         setEditing(false);
-                        onUpdateValue({x: x, y: y}, editingValue);
+                        onUpdateValue({x: cell.x, y: cell.y}, editingValue);
                         //TODO: Validation on blur. If new value is not in list of possible values, prevent blur
                         //this is just for manual editing
                     }}
@@ -60,7 +56,7 @@ export const Cell = (props) => {
                     }}
                 />
                 :
-                <span>{number}</span>
+                <span>{cell.number}</span>
             }
         </div>
     )

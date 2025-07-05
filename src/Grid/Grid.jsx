@@ -95,8 +95,47 @@ export const Grid = () => {
         //When value is set to [1-9], need to deduct the taken amount from the overflow of the black square, then update
         //remaining adjacent cells possible values
         editedCell.availableOverflow = newValue === '-' ? editedCell.minimumValue : 0;
-        const adjacentCells = getBlackAdjacentPositions(position);
-        adjacentCells.forEach((cell) => recalculateCell(newCells[cell.x][cell.y], newCells));
+
+        let modifiedPositions = [position];
+        if (newValue !== '-' && Number(newValue) > editedCell.minimumValue) {
+
+            const adjacentBlackCells = getAdjacentPositions(position).filter(
+                (position) => newCells[position.x][position.y].isBlack
+            );
+
+            let difference = Number(newValue) - editedCell.minimumValue;
+            adjacentBlackCells.forEach((position) => {
+
+                if (difference === 0) return;
+
+                modifiedPositions.push(position);
+
+                let adjacentBlackCell = newCells[position.x][position.y];
+                if (adjacentBlackCell.availableOverflow >= difference) {
+
+                    adjacentBlackCell.availableOverflow -= difference;
+                    difference = 0;
+                } else {
+
+                    difference -= adjacentBlackCell.availableOverflow;
+                    adjacentBlackCell.availableOverflow = 0;
+                }
+            });
+
+        }
+
+        let cellsToRecalculate = [];
+
+        modifiedPositions.forEach((position) => {
+            const neighbours = getBlackAdjacentPositions(position);
+            neighbours.forEach((neighbour) => {
+
+                const foundIndex = cellsToRecalculate.findIndex((element) => element.x === neighbour.x && element.y === neighbour.y);
+                if (foundIndex === -1) cellsToRecalculate.push(neighbour);
+            });
+        });
+
+        cellsToRecalculate.forEach((cell) => recalculateCell(newCells[cell.x][cell.y], newCells));
 
         setCells(newCells);
 
@@ -276,12 +315,7 @@ export const Grid = () => {
                                 return <Cell
                                     key={`${cell.x}, ${cell.y}`}
                                     mode={mode}
-                                    x={cell.x}
-                                    y={cell.y}
-                                    isFixed={cell.isFixed}
-                                    isBlack={cell.isBlack}
-                                    number={cell.number}
-                                    possibleValues={cell.possibleValues}
+                                    cell={cell}
                                     className={`${cell.y % size !== size - 1 ? 'border-right-none' : ''} ${cell.x > 0 ? 'border-top-none' : ''}`}
                                     style={cell.section != null ? {backgroundColor: cell.section.color} : {}}
                                     onClick={(position) => {
