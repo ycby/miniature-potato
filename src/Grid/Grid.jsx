@@ -9,9 +9,6 @@ import {CELL_SIZE} from "../App.jsx";
 //MODES: SETUP, SOLVE
 const modes = ['SETUP', 'SOLVE'];
 
-//<a href={"data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(initialConstraints.map((constraint) => {
-//                     return {...constraint, checker: constraint.checker.toString()}
-//                 })))}>export</a>
 export const Grid = () => {
 
     const [size, setSize] = useState(11);
@@ -52,7 +49,9 @@ export const Grid = () => {
 
         if (mode === 'SOLVE') {
 
-            cells.forEach((cell) => recalculateCell(cell, cells));
+            let newCells = generateCellsCopy(cells);
+            newCells.forEach((row) => row.forEach(cell => recalculateCell(cell, cells)));
+            setCells(newCells);
         }
     }, [mode]);
 
@@ -86,7 +85,6 @@ export const Grid = () => {
         newSectionCells[position.x][position.y].section = sections[currentSettingSection];
         setCells(newSectionCells);
 
-        //TODO: handle constraints
         const newConstraints = [...constraints];
 
         newConstraints[position.x].correct = null;
@@ -181,6 +179,7 @@ export const Grid = () => {
     const recalculateCell = (cell, cells) => {
 
         if (cell.isFixed) return;
+        console.log(cell);
 
         const adjacentPositions = getAdjacentPositions({x: cell.x, y: cell.y});
         const adjacentFixedPositions = getBlackAdjacentPositions({x: cell.x, y: cell.y});
@@ -566,6 +565,7 @@ export const Grid = () => {
 
                                                 newCells[position.x][position.y].section = item;
                                                 newCells[position.x][position.y].number = item.initialValue;
+                                                newCells[position.x][position.y].minimumValue = item.initialValue;
                                             });
                                         });
                                         setSections(parsedJson);
